@@ -1,8 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
-import { getDatabase, ref, set, push, onChildAdded,get,child } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+import { getDatabase, ref, set, push, onChildAdded,get,child,remove,onChildRemoved } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-analytics.js";
-
+import * as Popper from 'https://cdn.jsdelivr.net/npm/@popperjs/core@^2/dist/esm/index.js'
 const firebaseConfig = {
   apiKey: "AIzaSyDIZSPIGph3qvbkCJJ6zZsU6rHGUL2EvoE",
   authDomain: "chat-web-5cf56.firebaseapp.com",
@@ -104,34 +104,56 @@ onAuthStateChanged(auth, user => {
 const formChat = document.querySelector(".chat .inner-form")
 
 if(formChat){
+
+  const upload = new FileUploadWithPreview.FileUploadWithPreview('upload-images',{
+    multiple: true,
+    maxFileCount: 6
+  });
+  console.log(upload);
+
+
   formChat.addEventListener("submit", event => {
     event.preventDefault();
+    const images = upload.cachedFileArray;
     const content = event.target.content.value;
     event.target.content.value = "";
     const userID = auth.currentUser.uid
-    if(content && userID){
+    if((content || images.length) && userID){
       set(push(ref(db,"chats")),{
         content: content,
         userID: userID
       })
+      upload.resetPreviewPanel();
     }
   })
 }
 
 
+// xoa tin nhan
+
+const buttonDeletechats = (key) => {
+  const buttonDelete = document.querySelector(`[button-delete="${key}"]`) // lấy tin nhắn có key đó ra
+  buttonDelete.addEventListener("click",() => { // sự kiện click vào tin nhắn đó
+    remove(ref(db,"chats/" + key)) // xóa database trên
+  })
+}
 
 
 // lay danh sach tin nhan
 const bodyChat = document.querySelector(".chat .inner-body");
 if(bodyChat){
+  // lắng nghe sự kiện thêm database
   onChildAdded(ref(db,"chats"),dataChat => {
     const key = dataChat.key;
     const userID = dataChat.val().userID;
     const content = dataChat.val().content;
+    // lấy database
     get(child(ref(db),"users/" + userID)).then(data => {
       const meID = auth.currentUser.uid
       const fullName = data.val().fullName;
-      const elemetChat = document.createElement("div");
+      // thêm database vào giao diện
+      const elemetChat = document.createElement("div"); // tạo thẻ div
+      elemetChat.setAttribute("chat-key",key) // thêm atribute vào thẻ vừa tạo
       if(meID != userID){
         elemetChat.classList.add("inner-incoming")
         elemetChat.innerHTML=`
@@ -149,11 +171,42 @@ if(bodyChat){
           <div class="inner-content">
             ${content}
           </div>
+          <button class="button-delete" button-delete=${key}>
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
         `
       }
-      
       bodyChat.appendChild(elemetChat);
+      if(meID == userID) buttonDeletechats(key) // xóa trong database có key trên
     });
     
   })
+  // lắng nghe sự kiện xóa database 
+  onChildRemoved(ref(db,"chats"),dataChat => {
+    const key = dataChat.key;
+    const elementDelete = document.querySelector(`[chat-key="${key}"]`) // lấy ra thẻ vừa có database bị xóa
+    bodyChat.removeChild(elementDelete); // xóa thẻ đó
+  })
 }
+
+
+const emojiPicker = document.querySelector('emoji-picker')
+if(emojiPicker){
+  const inputChat = document.querySelector(".chat .inner-form input[name='content']");
+
+  emojiPicker.addEventListener("emoji-click",event => {
+    inputChat.value += event.detail.unicode;
+  })
+}
+
+// Hien thi tooltip
+
+const ButtonIcon = document.querySelector(".button-icon")
+if(ButtonIcon){
+  const tooltip = document.querySelector(".tooltip");
+  Popper.createPopper(ButtonIcon,tooltip);
+  ButtonIcon.addEventListener("click",() => {
+    tooltip.classList.toggle("shown");
+  })
+}
+
