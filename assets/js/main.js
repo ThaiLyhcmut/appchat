@@ -189,7 +189,9 @@ if(bodyChat){
           <div class="inner-name">
             ${fullName}
           </div>
-          
+          <div class="inner-img">
+            ${listImg.join("")}
+          </div>
           <div class="inner-content">
 
             ${content}
