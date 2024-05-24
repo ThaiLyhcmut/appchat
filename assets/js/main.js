@@ -180,7 +180,11 @@ if(bodyChat){
       const listImg = []
 
       for(let i = 0;i < imagesCloud.length ;i++){
-        listImg.push(`<img src=${imagesCloud[i]}\>`)
+        listImg.push(`<div class="inner-img"> <img src=${imagesCloud[i]}\> </div>`)
+      }
+      const strContent = ""
+      if(content != ""){
+        strContent += `<div class="inner-content">${strContent}</div>`
       }
       elementChat.setAttribute("chat-key",key) // thêm atribute vào thẻ vừa tạo
       if(meID != userID){
@@ -189,24 +193,15 @@ if(bodyChat){
           <div class="inner-name">
             ${fullName}
           </div>
-          <div class="inner-img">
-            ${listImg.join("")}
-          </div>
-          <div class="inner-content">
-
-            ${content}
-          </div>
+          ${listImg.join("")}
+          ${content}
         `
       }
       else {
         elementChat.classList.add("inner-outgoing")
         elementChat.innerHTML=`
-          <div class="inner-img">
-            ${listImg.join("")}
-          </div>
-          <div class="inner-content">
-            ${content}
-          </div>
+          ${listImg.join("")}
+          ${content}
           <button class="button-delete" button-delete=${key}>
             <i class="fa-solid fa-trash-can"></i>
           </button>
