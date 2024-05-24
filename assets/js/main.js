@@ -112,16 +112,39 @@ if(formChat){
   console.log(upload);
 
 
-  formChat.addEventListener("submit", event => {
+  formChat.addEventListener("submit",async event => {
     event.preventDefault();
     const images = upload.cachedFileArray;
     const content = event.target.content.value;
     event.target.content.value = "";
     const userID = auth.currentUser.uid
-    if((content || images.length) && userID){
+
+    const url = 'https://api.cloudinary.com/v1_1/dkpirk5rl/image/upload';
+    const formData = new FormData();
+    const imagesCloud = []
+
+    for(let i = 0;i < images.length;i++){
+      let file = images[i];
+      formData.append('file', file);
+      formData.append('upload_preset', 'kuwtouz0');
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+      imagesCloud.push(data.url)
+
+    }
+    console.log(imagesCloud)
+
+
+    if((content || imagesCloud.length) && userID){
       set(push(ref(db,"chats")),{
         content: content,
-        userID: userID
+        userID: userID,
+        images: imagesCloud.length == 0?"":imagesCloud
       })
       upload.resetPreviewPanel();
     }
@@ -147,27 +170,38 @@ if(bodyChat){
     const key = dataChat.key;
     const userID = dataChat.val().userID;
     const content = dataChat.val().content;
+    const imagesCloud = dataChat.val().images;
     // lấy database
     get(child(ref(db),"users/" + userID)).then(data => {
       const meID = auth.currentUser.uid
       const fullName = data.val().fullName;
       // thêm database vào giao diện
-      const elemetChat = document.createElement("div"); // tạo thẻ div
-      elemetChat.setAttribute("chat-key",key) // thêm atribute vào thẻ vừa tạo
+      const elementChat = document.createElement("div"); // tạo thẻ div
+      const listImg = []
+
+      for(let i = 0;i < imagesCloud.length ;i++){
+        listImg.push(`<img src=${imagesCloud[i]}\>`)
+      }
+      elementChat.setAttribute("chat-key",key) // thêm atribute vào thẻ vừa tạo
       if(meID != userID){
-        elemetChat.classList.add("inner-incoming")
-        elemetChat.innerHTML=`
+        elementChat.classList.add("inner-incoming")
+        elementChat.innerHTML=`
           <div class="inner-name">
             ${fullName}
           </div>
+          
           <div class="inner-content">
+
             ${content}
           </div>
         `
       }
       else {
-        elemetChat.classList.add("inner-outgoing")
-        elemetChat.innerHTML=`
+        elementChat.classList.add("inner-outgoing")
+        elementChat.innerHTML=`
+          <div class="inner-img">
+            ${listImg.join("")}
+          </div>
           <div class="inner-content">
             ${content}
           </div>
@@ -176,7 +210,7 @@ if(bodyChat){
           </button>
         `
       }
-      bodyChat.appendChild(elemetChat);
+      bodyChat.appendChild(elementChat);
       if(meID == userID) buttonDeletechats(key) // xóa trong database có key trên
     });
     

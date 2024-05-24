@@ -78,6 +78,15 @@ body {
   font-size: 13px;
   line-height: 1.4;
 }
+.chat .inner-img img{
+  
+  width: 50%;
+  height: auto;
+}
+
+.chat .inner-outgoing .inner-img img{
+  margin-left: 50%;
+}
 
 .chat .inner-outgoing {
   position: relative;
