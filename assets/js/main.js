@@ -3,15 +3,17 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 import { getDatabase, ref, set, push, onChildAdded,get,child,remove,onChildRemoved } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-analytics.js";
 import * as Popper from 'https://cdn.jsdelivr.net/npm/@popperjs/core@^2/dist/esm/index.js'
+import {FileUploadWithPreview}  from 'https://cdn.jsdelivr.net/npm/file-upload-with-preview/dist/file-upload-with-preview.min.js';
+
 const firebaseConfig = {
   apiKey: "AIzaSyDIZSPIGph3qvbkCJJ6zZsU6rHGUL2EvoE",
   authDomain: "chat-web-5cf56.firebaseapp.com",
+  databaseURL: "https://chat-web-5cf56-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "chat-web-5cf56",
   storageBucket: "chat-web-5cf56.appspot.com",
   messagingSenderId: "276551889445",
   appId: "1:276551889445:web:14186da78c37c8cc6105cc",
-  measurementId: "G-MCW58XP9QF",
-  databaseURL: "https://chat-web-5cf56-default-rtdb.asia-southeast1.firebasedatabase.app"
+  measurementId: "G-MCW58XP9QF"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -105,7 +107,7 @@ const formChat = document.querySelector(".chat .inner-form")
 
 if(formChat){
 
-  const upload = new FileUploadWithPreview.FileUploadWithPreview('upload-images',{
+  const upload = new FileUploadWithPreview('upload-images',{
     multiple: true,
     maxFileCount: 6
   });
